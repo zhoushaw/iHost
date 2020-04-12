@@ -14,7 +14,7 @@ let configPath = path.resolve(configDir,'ihost');
 const pathMap = {
     host: configPath,
     local: path.join(configPath,'local'),
-    localOg: path.join(configPath,'local','origin'), // 系统host
+    localOg: path.join(configPath,'local','System'), // 系统host
     remote: path.join(configPath,'remote'),
     remoteDev: path.join(configPath,'remote','dev'),
     remotePre: path.join(configPath,'remote','pre')
@@ -23,16 +23,16 @@ const pathMap = {
 
 let initFile = ()=>{
     // 若不存在创建目录、文件夹、文件
-    createDirOrFile(pathMap.localOg,false);
+    createDirOrFile(pathMap.localOg);
     createDirOrFile(pathMap.remoteDev);
     createDirOrFile(pathMap.remotePre);
     execSync(`cp /etc/hosts '${pathMap.localOg}'`);
     
     let localFilesArr = execSync(`ls '${pathMap.local}'`, 'utf8').toString().split('\n');
-
+    
     localFilesArr = localFilesArr.forEach(function(item) {
-        if (item) {
-           localFiles.push({ title: item, isEdit: false, isUse: false });
+        if (item!=='System' && item) {
+           localFiles.push({ title: item, isEdit: false, isActive: false });
         }
     });
 }
@@ -41,7 +41,9 @@ initFile();
 
 
 // 读取文件
-let readFile = function(type, name) {
+let readFile = function(type = 'local', name) {
+    console.log(`${pathMap[type]}/${name}`);
+    
     return fs.readFileSync(`${pathMap[type]}/${name}`, 'utf8');
 }
 

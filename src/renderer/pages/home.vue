@@ -17,12 +17,12 @@
             </div>
             <div class="host-list">
                 <div class="item" :class="{'active':curEditIndex===0}"  @click="selectFile(0)"><i class="el-icon-s-tools"></i> System Hosts</div>
-                <div class="item" v-for="(item,index) in hostList" :class="{'active':curEditIndex===index+1}" :key="index" @click="selectFile(index+1)">
+                <div class="item" v-for="(file,index) in localFiles" :class="{'active':curEditIndex===index+1}" :key="index" @click="selectFile(index+1)">
                     <i class="el-icon-tickets"></i> 
-                    <span v-if="!item.isEdit" @dblclick="editInput(index)">{{item.title}}</span>
+                    <span v-if="!file.isEdit" @dblclick="editInput(index)">{{file.title}}</span>
                     <input 
                         v-else
-                        v-model="hostList[index].title" 
+                        v-model="localFiles[index].title" 
                         :ref="`elInput${index}`"
                         size="mini" 
                         @keyup.esc="blurInput(index)"
@@ -32,7 +32,7 @@
                         style="margin-left: 20px;"
                         :width="30"
                         inactive-color="#404040"
-                        v-model="item.isActive">
+                        v-model="file.isActive">
                     </el-switch>
                 </div>
             </div>
@@ -55,21 +55,15 @@ export default {
     name: 'home',
     data () {
         return {
-            localFiles,
+            localFiles, // {title: 'My Host',isEdit: false,isActive: false}
             hostVal: '',
             curType: '',
             curEditIndex: 0,
-            hostList: [
-                {title: 'My Host',isEdit: false,isActive: false},
-                {title: 'Dev',isEdit: false,isActive: false},
-                {title: 'Pre',isEdit: false,isActive: false},
-            ],
-            value2: false
         }
     },
     created (){
-        console.log(localFiles);
-        
+        // this.localFiles
+        // console.log(localFiles);
     },
     methods: {
         change (e) {
@@ -78,19 +72,21 @@ export default {
             }
         },
         selectFile (index) {
-            // var file = readFile('local','origin');
-            // this.hostVal = file;
-            // this.curType = 'local';
+            if (index===0) {
+                this.hostVal = readFile('local','System')
+            } else {
+                console.log(this.localFiles[index-1]);
+            }
             this.curEditIndex = index;
         },
         editInput (index) {
-            this.hostList[index].isEdit = true;
+            this.localFiles[index].isEdit = true;
             this.$nextTick(()=>{
                 this.$refs[`elInput${index}`][0].focus();
             });
         },
         blurInput (index) {
-            this.hostList[index].isEdit = false;
+            this.localFiles[index].isEdit = false;
         },
         saveFileHandler() {
             writeHost(this.hostVal);

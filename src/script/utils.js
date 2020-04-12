@@ -15,7 +15,6 @@ export function createDirOrFile(pt,isFile = true){
     
     while(folders.length>0) {
         p += folders.shift() + path.sep;
-        console.log(p);
         if (!fs.existsSync(p)){
             fs.mkdirSync(p);
         }
