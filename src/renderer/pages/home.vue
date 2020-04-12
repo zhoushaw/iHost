@@ -1,30 +1,38 @@
 <template>
     <div id="wrapper">
-        <main>
         <div class="left-side">
-            <div>
-                <div class="category-title">Local</div> 
-                <div class="file-item-title" v-for="(file,index) in localFiles" :key="index">   
-                    <span @click="selectFile(file.title)">{{ file.title }}</span>
-                    <!-- <input
-                        v-if="file.isEdit"
-                        class="file-item-input"
-                        v-model.trim="file.title"
-                        @keyup.esc="editFileHandler(index)"
-                        @keyup.enter="editFileHandler(index)"
-                        @blur="editFileHandler(index)" 
-                    /> -->
-                    <!-- 
-                        @keyup.esc="escFileHandler(index)"
-                        @keyup.enter="submitFileHandler(file, index)"
-                        @blur="escFileHandler(index)" 
-                        v-focus="file.isEdit" -->
+            <div class="tool-bar">
+                <el-tooltip class="tooltip" content="新建" placement="bottom">
+                    <i class="el-icon-document-add"></i>
+                </el-tooltip>
+                <el-tooltip content="删除" placement="bottom">
+                    <i class="el-icon-delete"></i>
+                </el-tooltip>
+                <el-tooltip content="新建" placement="bottom">
+                    <i class="el-icon-remove-outline"></i>
+                </el-tooltip>
+                <el-tooltip content="新建" placement="bottom">
+                    <i class="el-icon-circle-check"></i>
+                </el-tooltip>
+            </div>
+            <div class="host-list">
+                <div class="item"><i class="el-icon-tickets"></i> System Hosts</div>
+                <div class="item" v-for="(item,index) in hostList" :key="index"  @dblclick="editInput(index)">
+                    <i class="el-icon-tickets"></i> 
+                    <span v-if="!item.isEdit" >{{item.title}}</span>
+                    <input 
+                        v-else
+                        v-model="hostList[index].title" 
+                        :ref="`elInput${index}`"
+                        size="mini" 
+                        @keyup.esc="blurInput(index)"
+                        @keyup.enter="blurInput(index)"
+                        @blur="blurInput(index)"  />
                 </div>
             </div>
         </div>
 
         <div class="right-side">
-            
             <textarea
                 v-model="hostVal"
                 class="file-content-textarea"
@@ -32,7 +40,6 @@
                 @keydown="change"
             ></textarea>
         </div>
-        </main>
     </div>
 </template>
 
@@ -44,11 +51,14 @@ export default {
         return {
             localFiles,
             hostVal: '',
-            curType: ''
+            curType: '',
+            curEditIndex: null,
+            hostList: [
+                {title: 'My Host',isEdit: false},
+                {title: 'Dev',isEdit: false},
+                {title: 'Pre',isEdit: false},
+            ]
         }
-    },
-    created () {
-        
     },
     methods: {
         selectFile () {
@@ -61,30 +71,36 @@ export default {
                 this.saveFileHandler();
             }
         },
-        editFileHandler(index){
-            this.localFiles[index].isEdit = !this.localFiles[index].isEdit;
+        editInput (index) {
+            this.hostList[index].isEdit = true;
+            this.$nextTick(()=>{
+                this.$refs[`elInput${index}`][0].focus();
+            });
+        },
+        blurInput (index) {
+            this.hostList[index].isEdit = false;
         },
         saveFileHandler() {
             writeHost(this.hostVal);
-            restar();
         }
     }
 }
 </script>
 
-<style>
-@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro');
+<style lang="scss">
 
 * {
     margin: 0;
 }
-body { 
-    font-family: 'Source Sans Pro', sans-serif;
+html,body { 
+    height: 100%;
+    width: 100%;
 }
 
 
-
 #wrapper {
+    display: flex;
+    justify-content: space-between;
     background:
         radial-gradient(
             ellipse at top left,
@@ -93,53 +109,67 @@ body {
         );
     height: 100vh;
     width: 100vw;
+    .left-side {
+        flex-basis: 200px;
+        height: 100%;
+        background: #212121;
+        .tool-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 50px;
+            background: #0c0c0c;
+            color: #9e9e9e;
+            font-size: 20px;
+            i {
+                padding: 8px;
+            }
+            i:hover{
+                color: rgb(194, 190, 190);
+                background: rgb(99, 98, 98);
+                border-radius: 50%;
+                cursor: pointer;
+            }
+        }
+        .host-list {
+            color: #ccc;
+            font-size: 15px;
+            .item {
+                display: flex;
+                align-items: center;
+                height: 40px;
+                padding: 10px 20px;
+                cursor: pointer;
+                user-select:none;
+                i {
+                    margin-right: 10px;
+                }
+                input {
+                    width: 80px;
+                    height: 20px;
+                    border-radius: 5px;
+                    background: transparent;
+                    border: 1px solid #aaa;
+                    outline: none;
+                    color: #ccc;
+                }
+            }
+            .item:hover{
+                background: #2b2a2a;
+            }
+        }
+    }
+
+
+
+    .right-side {
+        flex-grow: 1;
+        background: #404040;
+        overflow: hidden;
+    }
+
 }
 
-main {
-    display: flex;
-    justify-content: space-between;
-    height: 100vh;
-    width: 100vw;
-}
-
-.category-title {
-    font-weight: bold;
-    color: #666;
-    margin-top: 20px;
-}
-
-
-.file-item-title {
-    padding-left: 5px;
-    display: inline-block;
-    color: #aaa;
-    font-weight: bold;
-    width: 200px;
-    height: 30px;
-    line-height: 30px;
-    cursor: pointer;
-}
-.file-item-title:hover{
-    color: #fff;
-    background: #404040;
-}
-
-.file-item-value {
-    display: inline-block;
-    width: 100px;
-}
-.file-item-input {
-    width: 100px;
-    font-size: 14px;
-    border: 1px solid #aaa;
-    color: #aaa;
-    border-radius: 4px;
-    outline: none;
-    padding: 0 5px;
-    background: transparent;
-    height: 20px;
-    outline-style: none ;
-}
 
 
 .file-content-textarea {
@@ -153,18 +183,8 @@ main {
     color: #ccc;
     background: #404040;
     border: none;
-}
-
-.left-side {
-    flex-basis: 200px;
-    height: 100%;
-    padding: 0 15px;
-    background: #303030;
-}
-
-.right-side {
-    flex-grow: 1;
-    background: #404040;
+    outline:none;
+    resize:none;
 }
 
 </style>
