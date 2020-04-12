@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { execSync, exec, spawn, execFileSync } from 'child_process';
 import path from 'path';
+import { createDirOrFile } from './utils.js';
 import './proxy.js';
 
 const {remote} = require('electron');
@@ -8,50 +9,26 @@ let configDir = remote.app.getPath('userData');
 
 
 let localFiles = [];
-let iHostPathE = path.resolve(configDir,'ihost');
-let iHostPathN = iHostPathE.replace(/\s/g,'\\ ');
+let configPath = path.resolve(configDir,'ihost');
 
 const pathMap = {
-    host: {
-        new:  iHostPathN,
-        exist: iHostPathE
-    },
-    local: {
-        new: path.join(iHostPathN,'local'),
-        exist: path.join(iHostPathE,'local')
-    } ,
-    localOg: {
-        new: path.join(iHostPathN,'local','origin'),
-        exist: path.join(iHostPathE,'local','origin'),
-    }, // 系统host
-    remote: {
-        new: path.join(iHostPathN,'remote'),
-        exist:  path.join(iHostPathE,'remote'),
-    },
-    remoteDev: {
-        new: path.join(iHostPathN,'remote','dev'),
-        exist:  path.join(iHostPathE,'remote','dev'),
-    },
-    remotePre: {
-        new: path.join(iHostPathN,'remote','pre'),
-        exist:  path.join(iHostPathE,'remote','pre'),
-    }
+    host: configPath,
+    local: path.join(configPath,'local'),
+    localOg: path.join(configPath,'local','origin'), // 系统host
+    remote: path.join(configPath,'remote'),
+    remoteDev: path.join(configPath,'remote','dev'),
+    remotePre: path.join(configPath,'remote','pre')
 };
 
 
 let initFile = ()=>{
     // 若不存在创建目录、文件夹、文件
-    !fs.existsSync(pathMap.host.exist) && execSync(`mkdir ${pathMap.host.new}`);
-    !fs.existsSync(pathMap.remote.exist) && execSync(`mkdir ${pathMap.remote.new}`);
-    !fs.existsSync(pathMap.remoteDev.exist) && execSync(`touch ${pathMap.remoteDev.new}`);
-    !fs.existsSync(pathMap.remotePre.exist) && execSync(`touch ${pathMap.remotePre.new}`);
-    // 复制系统host
-    if (!fs.existsSync(pathMap.local.exist)) {
-        execSync(`mkdir ${pathMap.local.new}`);
-        execSync(`cp /etc/hosts ${pathMap.localOg.new}`);
-    }
+    createDirOrFile(pathMap.localOg,false);
+    createDirOrFile(pathMap.remoteDev);
+    createDirOrFile(pathMap.remotePre);
+    execSync(`cp /etc/hosts '${pathMap.localOg}'`);
     
-    let localFilesArr = execSync(`ls ${pathMap.local.new}`, 'utf8').toString().split('\n');
+    let localFilesArr = execSync(`ls '${pathMap.local}'`, 'utf8').toString().split('\n');
 
     localFilesArr = localFilesArr.forEach(function(item) {
         if (item) {
@@ -65,11 +42,11 @@ initFile();
 
 // 读取文件
 let readFile = function(type, name) {
-    return fs.readFileSync(`${pathMap[type].exist}/${name}`, 'utf8');
+    return fs.readFileSync(`${pathMap[type]}/${name}`, 'utf8');
 }
 
 let readConfigFile = function(key) {
-    let configString = fs.readFileSync(`${pathMap.config.exist}`, 'utf8');
+    let configString = fs.readFileSync(`${pathMap.config}`, 'utf8');
     let config = configString ? JSON.parse(configString) : {};
 
     if (key === 'password') {

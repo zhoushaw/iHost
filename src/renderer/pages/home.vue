@@ -67,6 +67,10 @@ export default {
             value2: false
         }
     },
+    created (){
+        console.log(localFiles);
+        
+    },
     methods: {
         change (e) {
             if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)){
