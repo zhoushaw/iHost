@@ -16,10 +16,10 @@
                 </el-tooltip>
             </div>
             <div class="host-list">
-                <div class="item"><i class="el-icon-tickets"></i> System Hosts</div>
-                <div class="item" v-for="(item,index) in hostList" :key="index"  @dblclick="editInput(index)">
+                <div class="item" :class="{'active':curEditIndex===0}"  @click="selectFile(0)"><i class="el-icon-s-tools"></i> System Hosts</div>
+                <div class="item" v-for="(item,index) in hostList" :class="{'active':curEditIndex===index+1}" :key="index" @click="selectFile(index+1)">
                     <i class="el-icon-tickets"></i> 
-                    <span v-if="!item.isEdit" >{{item.title}}</span>
+                    <span v-if="!item.isEdit" @dblclick="editInput(index)">{{item.title}}</span>
                     <input 
                         v-else
                         v-model="hostList[index].title" 
@@ -28,6 +28,12 @@
                         @keyup.esc="blurInput(index)"
                         @keyup.enter="blurInput(index)"
                         @blur="blurInput(index)"  />
+                    <el-switch
+                        style="margin-left: 20px;"
+                        :width="30"
+                        inactive-color="#404040"
+                        v-model="item.isActive">
+                    </el-switch>
                 </div>
             </div>
         </div>
@@ -52,24 +58,26 @@ export default {
             localFiles,
             hostVal: '',
             curType: '',
-            curEditIndex: null,
+            curEditIndex: 0,
             hostList: [
-                {title: 'My Host',isEdit: false},
-                {title: 'Dev',isEdit: false},
-                {title: 'Pre',isEdit: false},
-            ]
+                {title: 'My Host',isEdit: false,isActive: false},
+                {title: 'Dev',isEdit: false,isActive: false},
+                {title: 'Pre',isEdit: false,isActive: false},
+            ],
+            value2: false
         }
     },
     methods: {
-        selectFile () {
-            var file = readFile('local','origin');
-            this.hostVal = file;
-            this.curType = 'local';
-        },
         change (e) {
             if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)){
                 this.saveFileHandler();
             }
+        },
+        selectFile (index) {
+            // var file = readFile('local','origin');
+            // this.hostVal = file;
+            // this.curType = 'local';
+            this.curEditIndex = index;
         },
         editInput (index) {
             this.hostList[index].isEdit = true;
@@ -125,27 +133,36 @@ html,body {
                 padding: 8px;
             }
             i:hover{
-                color: rgb(194, 190, 190);
-                background: rgb(99, 98, 98);
+                color: rgb(151, 149, 149);
+                background: rgb(66, 66, 66);
                 border-radius: 50%;
                 cursor: pointer;
             }
         }
         .host-list {
             color: #ccc;
-            font-size: 15px;
+            font-size: 12px;
             .item {
                 display: flex;
                 align-items: center;
-                height: 40px;
+                height: 30px;
                 padding: 10px 20px;
                 cursor: pointer;
                 user-select:none;
+                &:hover,&.active{
+                    background: #2b2a2a;
+                }
+
+
                 i {
                     margin-right: 10px;
                 }
+                span {
+                    width: 100px;
+                }
                 input {
-                    width: 80px;
+                    width: 100px;
+                    box-sizing: border-box;
                     height: 20px;
                     border-radius: 5px;
                     background: transparent;
@@ -153,9 +170,6 @@ html,body {
                     outline: none;
                     color: #ccc;
                 }
-            }
-            .item:hover{
-                background: #2b2a2a;
             }
         }
     }
