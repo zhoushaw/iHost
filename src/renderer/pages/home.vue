@@ -57,18 +57,8 @@
 import { readFile, redhost, writeHost, getLocalFileList , dlFile , wtFile } from '@script/file.js';
 import EditHostInfo from './components/editHostInfo.vue';
 import { Message } from 'element-ui';
-// const mitmproxy = require('node-mitmproxy');
+import EasyProxy from '../../script/proxy.js';
 
-// mitmproxy.createProxy({
-//     sslConnectInterceptor: (req, cltSocket, head) => true,
-//     requestInterceptor: (rOptions, req, res, ssl, next) => {
-//         console.log(`正在访问：${rOptions.hostname}`);
-//         next();
-//     },
-//     responseInterceptor: (req, res, proxyReq, proxyRes, ssl, next) => {
-//         next();
-//     }
-// });
 
 export default {
     name: 'home',
@@ -78,6 +68,7 @@ export default {
     data () {
         return {
             localFiles: [], // {title: 'My Host',isEdit: false,isActive: false}
+            hostJson: {},
             hostVal: '',
             curType: '',
             curEditIndex: 0,
@@ -89,14 +80,53 @@ export default {
             }
         }
     },
-    computed: {
-        hostJson () {
-
-        }
+    watch: {
+        localFiles: {
+            handler (newLocalFiles) {
+                let hostC = '';
+                let hostJson = {};
+                newLocalFiles.forEach((item) => {
+                    if (item.isActive)  hostC = readFile('local',item.title);
+                });
+                hostC.split('\n').forEach((hosts=>{
+                    let hostArr = hosts.split(' ');
+                    let ip = hostArr[0];
+                    let host = hostArr.slice(1)
+                    host.forEach((ht)=>{
+                        hostJson[ht] = ip;
+                    })
+                }))
+                this.hostJson = hostJson;
+                console.log(hostJson);
+                return hostJson;
+            },
+            deep: true,
+        } 
     },
     created (){
         this.refreshList();
         this.selectFile(0);
+
+        let nwProxy = new EasyProxy({
+            port: 9393,
+            onBeforeRequest: (req)=> {
+                let host = this.hostJson[req.host]
+                console.log(`经过 ${req.host}`,this.hostJson[req.host]);
+                
+                if (host) {
+                    console.log(`log", ${req.host} + 被代理到： ${host}`);
+                    req.needDnsResolve = true;
+                    req.host = host;
+                }
+            },
+            onServerError: function(e) {
+                console.log("error", "serverError" + e.message);
+            },
+            onRequestError: function(e) {
+                console.log(e.message);
+            }
+        });
+        nwProxy.start();
     },
     methods: {
         refreshList () {

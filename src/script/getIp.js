@@ -44,4 +44,4 @@ let doDns = async (host)=>{
     });
 }
 
-module.exports = doDns;
+export default doDns;

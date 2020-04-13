@@ -153,20 +153,4 @@ class EasyProxy{
     }
 }
 
-
-
-var nwProxy = new EasyProxy({
-    port: 9393,
-    onBeforeRequest: function(req) {
-        // req.needDnsResolve = true;
-        console.log("log", req.host + "被代理到： is proxy");
-        // req.host = '127.0.0.1';
-    },
-    onServerError: function(e) {
-        console.log("error", "serverError" + e.message);
-    },
-    onRequestError: function(e) {
-        console.log(e.message);
-    }
-});
-nwProxy.start();
+export default EasyProxy;
