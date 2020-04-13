@@ -8,7 +8,6 @@ const {remote} = require('electron');
 let configDir = remote.app.getPath('userData');
 
 
-let localFiles = [];
 let configPath = path.resolve(configDir,'ihost');
 
 const pathMap = {
@@ -27,23 +26,25 @@ let initFile = ()=>{
     createDirOrFile(pathMap.remoteDev);
     createDirOrFile(pathMap.remotePre);
     execSync(`cp /etc/hosts '${pathMap.localOg}'`);
-    
-    let localFilesArr = execSync(`ls '${pathMap.local}'`, 'utf8').toString().split('\n');
-    
-    localFilesArr = localFilesArr.forEach(function(item) {
-        if (item!=='System' && item) {
-           localFiles.push({ title: item, isEdit: false, isActive: false });
-        }
-    });
 }
 
 initFile();
 
+let getLocalFileList = ()=>{
+    let localFiles = [];
+    let localFilesArr = execSync(`ls -t '${pathMap.local}'`, 'utf8').toString().split('\n');
+    
+    localFilesArr = localFilesArr.forEach(function(item) {
+        if (item!=='System' && item) {
+           localFiles.push({ title: item, isEdit: false, isActive: false, isCreating: false });
+        }
+    });
+    return localFiles.reverse();
+}
+
 
 // 读取文件
 let readFile = function(type = 'local', name) {
-    console.log(`${pathMap[type]}/${name}`);
-    
     return fs.readFileSync(`${pathMap[type]}/${name}`, 'utf8');
 }
 
@@ -77,9 +78,26 @@ let writeHost = function(data){
     })
 }
 
+let ctFile = function(name){
+    return createDirOrFile(`${pathMap.local}/${name}`);
+}
+
+let reNameFile = function(nPath,oldPath){
+    console.log(`mv '${pathMap.local}/${oldPath}' '${pathMap.local}/${nPath}'`);
+    
+    exec(`mv '${pathMap.local}/${oldPath}' '${pathMap.local}/${nPath}'`)
+}
+
+let dlFile = (path)=>{
+    return fs.unlinkSync(`${pathMap.local}/${path}`)
+}
+
 export {
-    localFiles,
     readFile,
     redhost,
-    writeHost
+    writeHost,
+    ctFile,
+    dlFile,
+    reNameFile,
+    getLocalFileList
 }
