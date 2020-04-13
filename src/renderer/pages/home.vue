@@ -24,7 +24,6 @@
                     <el-switch
                         style="margin-left: 20px;"
                         :width="30"
-                        inactive-color="#404040"
                         v-model="file.isActive">
                     </el-switch>
                 </div>
@@ -216,7 +215,7 @@ html,body {
             display: flex;
             justify-content: space-around;
             align-items: center;
-            height: 50px;
+            height: 40px;
             background: #3d3d3d;
             color: #9e9e9e;
             font-size: 20px;
