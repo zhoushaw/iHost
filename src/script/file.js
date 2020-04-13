@@ -83,13 +83,15 @@ let ctFile = function(name){
 }
 
 let reNameFile = function(nPath,oldPath){
-    console.log(`mv '${pathMap.local}/${oldPath}' '${pathMap.local}/${nPath}'`);
-    
     exec(`mv '${pathMap.local}/${oldPath}' '${pathMap.local}/${nPath}'`)
 }
 
 let dlFile = (path)=>{
     return fs.unlinkSync(`${pathMap.local}/${path}`)
+}
+
+let wtFile = (path,data)=>{
+    return fs.writeFileSync(`${pathMap.local}/${path}`, data.toString(), 'utf8');
 }
 
 export {
@@ -98,6 +100,7 @@ export {
     writeHost,
     ctFile,
     dlFile,
+    wtFile,
     reNameFile,
     getLocalFileList
 }

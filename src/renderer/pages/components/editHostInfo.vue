@@ -28,7 +28,7 @@ import { ctFile , reNameFile} from '@script/file.js';
 import { Message } from 'element-ui';
 
 export default {
-    props: ['editInfo','title'],
+    props: ['editInfo','title','localFiles'],
     data () {
         return {
             value: ''
@@ -42,6 +42,15 @@ export default {
             let title = this.$refs.oInput.value;
             // 创建文件
             if (!this.editInfo.isEdit) {
+                let isExist = this.localFiles.some((item)=>{
+                    return item.title === title;
+                });
+                if (isExist){
+                    Message({
+                        message: '已存在同名host'
+                    });
+                    return;
+                }
                 ctFile(title);
                 Message({
                     message: '创建成功',

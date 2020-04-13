@@ -36,6 +36,7 @@
                 :disabled="curEditIndex===0"
                 v-model="hostVal"
                 class="file-content-textarea"
+                autofocus="true"
                 @blur="saveFileHandler()"
                 @keydown="change"
             ></textarea>
@@ -45,6 +46,7 @@
             v-show="editInfo.show"
             :title="editInfo.title"
             :editInfo="editInfo"
+            :localFiles="localFiles"
             @confirm="confirmDialog"
             @toggle-status="()=>{this.editInfo.show = false}"
         />
@@ -52,8 +54,22 @@
 </template>
 
 <script>
-import { readFile, redhost, writeHost, getLocalFileList , dlFile } from '@script/file.js';
+import { readFile, redhost, writeHost, getLocalFileList , dlFile , wtFile } from '@script/file.js';
 import EditHostInfo from './components/editHostInfo.vue';
+import { Message } from 'element-ui';
+// const mitmproxy = require('node-mitmproxy');
+
+// mitmproxy.createProxy({
+//     sslConnectInterceptor: (req, cltSocket, head) => true,
+//     requestInterceptor: (rOptions, req, res, ssl, next) => {
+//         console.log(`正在访问：${rOptions.hostname}`);
+//         next();
+//     },
+//     responseInterceptor: (req, res, proxyReq, proxyRes, ssl, next) => {
+//         next();
+//     }
+// });
+
 export default {
     name: 'home',
     components: {
@@ -71,6 +87,11 @@ export default {
                 index: null,
                 title: ''
             }
+        }
+    },
+    computed: {
+        hostJson () {
+
         }
     },
     created (){
@@ -96,7 +117,14 @@ export default {
             this.curEditIndex = index;
         },
         saveFileHandler () {
-            writeHost(this.hostVal);
+            let path;
+            if (this.curEditIndex===0) {
+                path = 'System';
+            } else {
+                let fileName = this.localFiles[this.curEditIndex-1].title;
+                path = fileName;
+            }
+            wtFile(path,this.hostVal);
         },
         showEdit (flag,index) {
             this.editInfo = {
@@ -112,7 +140,6 @@ export default {
             }
 
             if (!editInfo.isEdit) this.refreshList();
-
             this.editInfo = {
                 show: false,
                 isEdit: false,
@@ -154,13 +181,13 @@ html,body {
     .left-side {
         flex-basis: 224px;
         height: 100%;
-        background: #212121;
+        background: #373d47;
         .tool-bar {
             display: flex;
             justify-content: space-around;
             align-items: center;
             height: 50px;
-            background: #0c0c0c;
+            background: #3d3d3d;
             color: #9e9e9e;
             font-size: 20px;
             i {
@@ -179,12 +206,12 @@ html,body {
             .item {
                 display: flex;
                 align-items: center;
-                height: 30px;
+                height: 25px;
                 padding: 10px 20px;
                 cursor: pointer;
                 user-select:none;
                 &:hover,&.active{
-                    background: #2b2a2a;
+                    background: #2d3138;
                 }
                 
 
@@ -226,7 +253,7 @@ html,body {
 
     .right-side {
         flex-grow: 1;
-        background: #404040;
+        background: #ffffff;
         // overflow: hidden;
     }
 
@@ -242,8 +269,8 @@ html,body {
     padding: 15px 20px;
     font-size: 14px;
     font-weight: 500;
-    color: #ccc;
-    background: #404040;
+    color: rgb(68, 67, 67);
+    background: #ffffff;
     border: none;
     outline:none;
     resize:none;
