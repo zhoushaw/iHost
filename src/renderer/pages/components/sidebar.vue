@@ -40,7 +40,7 @@
 <script>
 import { readFile, getLocalFileList , dlFile } from '@script/file.js';
 import EasyProxy from '@script/proxyServer/proxy.js';
-import {JudgeSudo} from '@script/utils.js';
+import { GetSudoPassword } from '@script/utils.js';
 import { MessageBox, Message } from 'element-ui';
 
 import EditInfo from './editInfo.vue';
@@ -171,14 +171,9 @@ export default {
         },
         // 开启停止服务
         STServer(password = ''){
-            try {
-                JudgeSudo(password);
-                this.isStart = !this.isStart;
-                Message({ message: this.isStart?'服务启动成功':'服务已关闭' ,type: this.isStart?'success':'warning'});
-            }catch(err) {
-                this.promptPs(err.msg)
-                err.msg && Message({ message: err.msg });
-            }
+            GetSudoPassword().then(password=>{
+                console.log(password);
+            });
         },
         // 提示输入密码
         promptPs (content) {

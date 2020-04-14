@@ -2,6 +2,7 @@ import fs from 'fs';
 import { execSync, exec, spawn, execFileSync } from 'child_process';
 import path from 'path';
 import { createDirOrFile, aesDecrypt, aesEncrypt } from './utils.js';
+const child_process = require('child_process');
 
 const {remote} = require('electron');
 let configDir = remote.app.getPath('userData');
@@ -20,7 +21,7 @@ const pathMap = {
     remotePre: path.join(configPath,'remote','pre')
 };
 
-
+console.log(pathMap.config);
 let initFile = ()=>{
     // 若不存在创建目录、文件夹、文件
     createDirOrFile(pathMap.config);
@@ -79,18 +80,15 @@ let writeConfigFile = function(key, val) {
 
 // 改变owner
 let haveSudoPower = function(password, owner) {
-    return new Promise((resolve,reject)=>{
+    return new Promise((resolve)=>{
         try {
             exec(`echo ${password}|sudo -S chown ${owner || whoami} /etc/hosts`, (err)=>{
-                if (err) {
-                    console.log(err);
-                    reject(err);
-                }else {
-                    resolve();
-                }
+                console.log(err)
+                let havaPower = err?false:true;
+                resolve(havaPower);
             });
         }catch(err){
-            reject(err);
+            resolve(false);
         }
     });
 };

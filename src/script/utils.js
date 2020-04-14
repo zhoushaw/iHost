@@ -1,7 +1,36 @@
+
 import {haveSudoPower,writeConfigFile,readConfigFile} from './file';
+import { MessageBox, Message } from 'element-ui';
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+
+export let GetSudoPassword = ()=>{
+    return new Promise((resolve,reject)=>{
+        async function checkPS (password){
+            password = password || readConfigFile('password');
+            let power = await haveSudoPower(password)
+            console.log(power)
+            if (power) {
+                writeConfigFile('password',password);
+                resolve(password);
+            } else {
+                MessageBox.prompt('请输入开机密码', '', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    inputType: 'password'
+                }).then(async ({ password }) => {
+                    GetSudoPassword(password);
+                })
+            }
+        }
+        try {
+            checkPS();
+        }catch(err){
+            reject(err);
+        }
+    });
+}
 
 // 创建文件或文件夹
 export function createDirOrFile(pt,isFile = true){
@@ -39,34 +68,3 @@ export let aesDecrypt = function (encrypted, key) { // 解密
     return decrypted;
 };
 
-
-
-// 若传入密码，判断密码是否有sudo权限，若有权限写入config中
-// 若没传密码判断config中密码是否任有sudo权限，没有提示重试
-export let JudgeSudo = function (passwrod){
-    return new Promise((resolve,reject)=>{
-        if (passwrod) {
-            haveSudoPower(passwrod).then(()=>{
-                writeConfigFile('password',passwrod);
-                resolve(true);
-            }).catch((err)=>{
-                reject({
-                    errMsg: err,
-                    reTry: true,
-                    msg: '您输入的密码不正确'
-                });
-            });
-        } else {
-            let getPs = readConfigFile('password');
-            haveSudoPower(getPs).then(()=>{
-                resolve(true);
-            }).catch((err)=>{
-                reject({
-                    errMsg: err,
-                    reTry: true,
-                    msg: getPs===''?'请输入密码':'您的密码已过期请重新授权'
-                });
-            });
-        }
-    });
-}
