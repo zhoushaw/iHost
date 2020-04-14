@@ -46,16 +46,10 @@ export default {
                     return item.title === title;
                 });
                 if (isExist){
-                    Message({
-                        message: '已存在同名host'
-                    });
+                    Message({ message: '已存在同名host' });
                     return;
                 }
                 ctFile(title);
-                Message({
-                    message: '创建成功',
-                    type: 'success'
-                });
             } else {
                 reNameFile(title,this.title);
             }
@@ -79,6 +73,8 @@ ul,li{
 }
 .edit-info {
     position: fixed;
+    top: 0;
+    left: 0;
     height: 100%;
     width: 100%;
     background: rgba(0,0,0,0.3);

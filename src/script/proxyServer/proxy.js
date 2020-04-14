@@ -1,9 +1,10 @@
 const http = require("http");
 const net = require("net");
 const url = require("url");
-const dns = require("dns");
 const doDns = require('./getIp');
+let sockets = [];
 
+let server;
 class EasyProxy{
     constructor(options){
         this.port = options.port || 9393;
@@ -14,7 +15,7 @@ class EasyProxy{
     }
 
     start () {
-        let server = http.createServer();
+        server = http.createServer();
     
         server.on("request", this.requestHandler);
         server.on("connect", this.connectHandler);
@@ -26,6 +27,16 @@ class EasyProxy{
     
         server.listen(this.port);
         console.log(`server is run on ${this.port} part`);
+    }
+
+    stop () {
+        // 释放所有连接池
+        sockets.forEach(function(socket){
+            socket.destroy();
+        });
+        server.close(function() {  
+            console.log("Closed out remaining connections.");  
+        }); 
     }
     
     requestHandler (req, res) {
@@ -52,7 +63,6 @@ class EasyProxy{
             this.emit("beforeRequest", requestOptions);
             if ( requestOptions.needDnsResolve ) {
                 console.log(requestOptions.host + ":" + requestOptions.port + "需要dns解析");
-                console.log('be here');
                 doDns(requestOptions.host).then((id)=>{
                     requestRemote( requestOptions, req, res, this);
                 }).catch(err=>{
@@ -101,6 +111,12 @@ class EasyProxy{
     }
     
     connectHandler (req, socket, head) {
+        // 收集连接池，关闭时回收
+        sockets.push(socket);
+        socket.once("close",function(){
+            sockets.splice(sockets.indexOf(socket),1);
+         });
+       
         try {
             let requestOptions = {
                 host: req.url.split(':')[0],
