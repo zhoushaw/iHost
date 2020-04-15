@@ -21,7 +21,6 @@ const pathMap = {
     remotePre: path.join(configPath,'remote','pre')
 };
 
-console.log(pathMap.config);
 let initFile = ()=>{
     // 若不存在创建目录、文件夹、文件
     createDirOrFile(pathMap.config);

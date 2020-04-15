@@ -5,27 +5,27 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-export let GetSudoPassword = ()=>{
+export let GetSudoPassword = (password)=>{
     return new Promise((resolve,reject)=>{
         async function checkPS (password){
             password = password || readConfigFile('password');
             let power = await haveSudoPower(password)
-            console.log(power)
             if (power) {
                 writeConfigFile('password',password);
                 resolve(password);
             } else {
+                Message({ message: '您的密码已失效' });
                 MessageBox.prompt('请输入开机密码', '', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     inputType: 'password'
-                }).then(async ({ password }) => {
-                    GetSudoPassword(password);
+                }).then(async ({ value }) => {
+                    GetSudoPassword(value);
                 })
             }
         }
         try {
-            checkPS();
+            checkPS(password);
         }catch(err){
             reject(err);
         }
