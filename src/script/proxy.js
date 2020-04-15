@@ -1,13 +1,16 @@
 const http = require("http");
 const net = require("net");
 const url = require("url");
-const doDns = require('./getIp');
+import {doDns} from './dns.js';
 let sockets = [];
 
+
+export let port = 9393;
+
 let server;
-class EasyProxy{
+export class EasyProxy{
     constructor(options){
-        this.port = options.port || 9393;
+        this.port = options.port || port;
         this.onServerError = options.onServerError || function() {};
         this.onBeforeRequest = options.onBeforeRequest || function() {};
         this.onBeforeResonse = options.onBeforeResonse || function() {};

@@ -1,12 +1,12 @@
 
-import {haveSudoPower,writeConfigFile,readConfigFile, whoami} from './file';
+import { haveSudoPower,writeConfigFile,readConfigFile, whoami } from './file';
 import { MessageBox, Message } from 'element-ui';
 import { exec } from 'child_process';
+import { port } from './proxy.js';
+
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-
-export let port = 9393;
 
 
 export let GetSudoPassword = (password)=>{

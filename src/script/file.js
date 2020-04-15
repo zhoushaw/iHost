@@ -1,8 +1,7 @@
 import fs from 'fs';
-import { execSync, exec, spawn, execFileSync } from 'child_process';
 import path from 'path';
+import { execSync, exec } from 'child_process';
 import { createDirOrFile, aesDecrypt, aesEncrypt } from './utils.js';
-const child_process = require('child_process');
 
 const {remote} = require('electron');
 let configDir = remote.app.getPath('userData');
@@ -95,11 +94,11 @@ let redhost = function(){
     return fs.readFileSync(`/etc/hosts`, 'utf8');
 }
 
-let writeHost = function(data){
-    changeOwner(password,whoami,(err, stdout, stderr)=>{
-        fs.writeFileSync(hostPath, data.toString(), 'utf8');
-    })
-}
+// 写系统host
+let writeHost = function(host) {
+    let hostPath = '/etc/hosts';
+    fs.writeFileSync(hostPath, host, 'utf8');
+};
 
 let ctFile = function(name){
     return createDirOrFile(`${pathMap.local}/${name}`);

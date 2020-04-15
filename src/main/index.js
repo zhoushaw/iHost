@@ -1,4 +1,5 @@
-import { app, BrowserWindow,Tray } from 'electron'
+import { app, BrowserWindow, Tray, ipcMain } from 'electron'
+import { EasyProxy } from '../script/proxy.js';
 const path = require('path');
 /**
  * Set `__static` path to static files in production
@@ -43,6 +44,34 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+
+
+// 代理服务器
+var hostJson = {};
+ipcMain.on('change-host-json', (event, arg) => {
+  hostJson = arg // prints "ping"
+  event.returnValue = 'pong'
+})
+let nwProxy = new EasyProxy({
+    onBeforeRequest: (req)=> {
+        let host = hostJson[req.host]
+        console.log(`经过 ${req.host}`,hostJson[req.host]);
+        
+        if (host) {
+            console.log(`log", ${req.host} + 被代理到： ${host}`);
+            req.needDnsResolve = true;
+            req.host = host;
+        }
+    },
+    onServerError: function(e) {
+        console.log("error", "serverError" + e.message);
+    },
+    onRequestError: function(e) {
+        console.log(e.message);
+    }
+});
+nwProxy.start();
 
 /**
  * Auto Updater

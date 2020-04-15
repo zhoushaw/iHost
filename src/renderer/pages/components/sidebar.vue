@@ -15,7 +15,7 @@
             <div class="item" :class="{'active':curEditIndex===0}"  @click="selectFile(0)"><i class="el-icon-s-tools"></i> System Hosts</div>
             <div class="item" v-for="(file,index) in localFiles" :class="{'active':curEditIndex===index+1}" :key="index" @click="selectFile(index+1)">
                 <i class="el-icon-document"></i> 
-                <span @dblclick="editInput(index)">{{file.title}}</span>
+                <span>{{file.title}}</span>
                 <i class="el-icon-edit edit" @click="showEdit(true,index)"></i>
                 <el-switch
                     style="margin-left: 20px;"
@@ -39,7 +39,6 @@
 
 <script>
 import { readFile, getLocalFileList , dlFile } from '@script/file.js';
-import EasyProxy from '@script/proxyServer/proxy.js';
 import { GetSudoPassword, setSystemProxy, port } from '@script/utils.js';
 import { MessageBox, Message } from 'element-ui';
 
@@ -59,32 +58,12 @@ export default {
                 index: null,
                 title: ''
             },
-            hostJson: {},
             nwProxy: null
         }
     },
     created () {
         this.refreshList();
         this.selectFile(0);
-        this.nwProxy = new EasyProxy({
-            port: port,
-            onBeforeRequest: (req)=> {
-                let host = this.hostJson[req.host]
-                console.log(`经过 ${req.host}`,this.hostJson[req.host]);
-                
-                if (host) {
-                    console.log(`log", ${req.host} + 被代理到： ${host}`);
-                    req.needDnsResolve = true;
-                    req.host = host;
-                }
-            },
-            onServerError: function(e) {
-                console.log("error", "serverError" + e.message);
-            },
-            onRequestError: function(e) {
-                console.log(e.message);
-            }
-        });
     },
     methods: {
 
@@ -125,8 +104,7 @@ export default {
         switchChange(val,index){
             this.localFiles[index].isActive = val;
             this.$emit('set-files',this.localFiles);     
-
-            this.refreshHostJson();
+            this.$emit('refresh-json');
             this.setActiveJson();
         },
         setActiveJson () {
@@ -135,27 +113,6 @@ export default {
                 activeJson[item.title] = item.isActive;
             });
             window.localStorage.setItem('activeJson',JSON.stringify(activeJson));
-        },
-        refreshHostJson () {
-            let hostC = '';
-            let hostJson = {};
-            this.localFiles.forEach((item,key) => {
-                if (item.isActive) {
-                    hostC += readFile('local',item.title);
-                }
-            });
-            
-            hostC.split('\n').forEach((hosts=>{
-                let hostArr = hosts.split(' ');
-                let ip = hostArr[0];
-                let host = hostArr.slice(1)
-                host.forEach((ht)=>{
-                    hostJson[ht] = ip;
-                })
-            }))
-            this.hostJson = hostJson;
-            
-            return hostJson;
         },
         confirm (editInfo) {
             if (typeof editInfo.index === 'number') {
@@ -175,7 +132,6 @@ export default {
             setSystemProxy((res)=>{
                 this.isStart = !this.isStart;
                 if (this.isStart) {
-                    this.nwProxy.start();
                     Message({ message: '代理开启成功', type: 'success' });
                 } else {
                     Message({ message: '代理已关闭' });

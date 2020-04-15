@@ -1,11 +1,13 @@
-var exec = require("child_process").exec;
+
+import { exec } from 'child_process';
+
+
 
 let _dnsCache = {
     length: 0
 };
 
-
-let getIP = (host)=>{
+export let getIP = (host)=>{
     let resultIp;
     return new Promise((resolve,reject)=>{
         exec(`host ${host}`,(err,stdout)=>{
@@ -25,7 +27,7 @@ let getIP = (host)=>{
     })
 }
 
-let doDns = async (host)=>{
+export let doDns = async (host)=>{
     return new Promise(async (resolve,reject)=>{
         let finalIp;
         // 没有缓存dns
@@ -43,5 +45,3 @@ let doDns = async (host)=>{
         resolve(finalIp);
     });
 }
-
-export default doDns;

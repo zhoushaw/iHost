@@ -1,7 +1,6 @@
 <template>
     <div class="right-side">
         <textarea
-            :disabled="curEditIndex===0"
             v-model="hostVal"
             class="file-content-textarea"
             autofocus="true"
@@ -12,7 +11,8 @@
 </template>
 
 <script>
-import { readFile, wtFile } from '@script/file.js';
+import { readFile, wtFile, writeHost, redhost } from '@script/file.js';
+import { GetSudoPassword } from '@script/utils.js';
 export default {
     props: ['localFiles','curEditIndex'],
     data () {
@@ -22,19 +22,23 @@ export default {
     },
     watch: {
         curEditIndex (nIndex) {
+            this.initHostVal();
+        }
+    },
+    created() {
+        this.initHostVal();
+    },
+    methods: {
+        initHostVal () {
             let hostVal = '';
             if (this.curEditIndex===0) {
-                hostVal = readFile('local','System');
+                hostVal = redhost();
             } else {
                 let fileName = this.localFiles[this.curEditIndex-1].title;
                 hostVal = readFile('local',fileName);
             }
             this.hostVal = hostVal;
-        }
-    },
-    computed: {
-    },
-    methods: {
+        },
         change (e) {
             if (e.keyCode == 83 && (navigator.platform.match("Mac") ? e.metaKey : e.ctrlKey)){
                 this.saveFileHandler();
@@ -42,14 +46,16 @@ export default {
         },
         // 编辑区操作
         saveFileHandler () {
-            let path;
+            let hostVal = this.hostVal;
             if (this.curEditIndex===0) {
-                path = 'System';
+                GetSudoPassword().then(()=>{
+                    writeHost(hostVal);
+                });
             } else {
                 let fileName = this.localFiles[this.curEditIndex-1].title;
-                path = fileName;
+                wtFile(fileName,hostVal); 
             }
-            wtFile(path,this.hostVal);
+            this.$emit('refresh-json');
         }
     }
 }
