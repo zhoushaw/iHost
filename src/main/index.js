@@ -45,8 +45,10 @@ function createWindow () {
     })
 }
 
-app.on('ready', createWindow)
+app.on('ready', createWindow);
+
 app.dock.setIcon(`${path.join(__static, './icon.png')}`);
+
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit()
@@ -60,11 +62,11 @@ app.on('activate', () => {
 })
 
 app.on('before-quit',async (event)=>{
-    if (!canClose)  event.preventDefault();
-    setSystemProxy(()=>{
-        canClose = true;
-        app.quit();
-    }, false, false)
+    // if (!canClose)  event.preventDefault();
+    // setSystemProxy(()=>{
+    //     canClose = true;
+    //     app.quit();
+    // }, false, false)
 })
 
 function createAgentSever(){
