@@ -1,15 +1,71 @@
 
-import { haveSudoPower,writeConfigFile,readConfigFile, whoami } from './file';
-import { MessageBox, Message } from 'element-ui';
+// import { MessageBox, Message } from 'element-ui';
 import { exec } from 'child_process';
 import { port } from './proxy.js';
+import { whoami, pathMap } from './config.js';
 
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
 
-export let GetSudoPassword = (password)=>{
+export let aesEncrypt = function (data, key) { // 加密
+    const cipher = crypto.createCipher('aes192', key);
+    var crypted = cipher.update(data, 'utf8', 'hex');
+    crypted += cipher.final('hex');
+    return crypted;
+};
+
+export let aesDecrypt = function (encrypted, key) { // 解密
+    const decipher = crypto.createDecipher('aes192', key);
+    var decrypted = decipher.update(encrypted, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
+    return decrypted;
+};
+
+
+
+// 改变owner
+let haveSudoPower = function(password, owner) {
+    return new Promise((resolve)=>{
+        try {
+            exec(`echo ${password}|sudo -S chown ${owner || whoami} /etc/hosts`, (err)=>{
+                let havaPower = err?false:true;
+                resolve(havaPower);
+            });
+        }catch(err){
+            resolve(false);
+        }
+    });
+};
+
+// 写配置文件
+export let writeConfigFile = function(key, val) {
+    let configString = fs.readFileSync(`${pathMap.config}`, 'utf8');
+    let config = configString ? JSON.parse(configString) : {};
+
+    if (key === 'password') {
+        config[key] = aesEncrypt(val, 'ihost')
+    } else {
+        config[key] = val;
+    }
+    fs.writeFileSync(`${pathMap.config}`, JSON.stringify(config), 'utf8');
+}
+
+
+// 读取配置文件
+export let readConfigFile = function(key) {
+    let configString = fs.readFileSync(`${pathMap.config}`, 'utf8');
+    let config = configString ? JSON.parse(configString) : {};
+    
+    if (key === 'password') {
+        return config[key] ? aesDecrypt(config[key], 'ihost') : '';
+    } else {
+        return config[key] || '';
+    }
+}
+
+export let GetSudoPassword = (password,showUi)=>{
     return new Promise((resolve,reject)=>{
         async function checkPS (password){
             password = password || readConfigFile('password');
@@ -17,9 +73,10 @@ export let GetSudoPassword = (password)=>{
             if (power) {
                 writeConfigFile('password',password);
                 resolve(password);
-            } else {
-                Message({ message: '您的密码已失效' });
-                MessageBox.prompt('请输入开机密码', '', {
+            } else if(showUi) {
+                let element = import('element-ui');
+                element.Message({ message: '您的密码已失效' });
+                element.MessageBox.prompt('请输入开机密码', '', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     inputType: 'password'
@@ -69,8 +126,7 @@ function _changeProxy(data,status = true) {
         enableCommand = `echo ${password}|sudo -u ${whoami} ${enableCommand}`;
         disableCommand = `echo ${password}|sudo -u ${whoami} ${disableCommand}`;
 
-        var child = exec(status? enableCommand : disableCommand, function(err, stdout, stderr) {
-            
+        exec(status? enableCommand : disableCommand, function(err, stdout, stderr) {
             if (err) {
                 reject(err);
                 return;
@@ -84,8 +140,9 @@ function _changeProxy(data,status = true) {
     })
 }
 
-export let setSystemProxy = (cb,status)=>{
-    GetSudoPassword()
+// 在渲染进程中不显示弹出输入密码框，否则反之
+export let setSystemProxy = (cb,status,showUi = true)=>{
+    return GetSudoPassword('',showUi)
         .then(_getNetWorkService)
         .then((data)=>_changeProxy(data,status))
         .then(function(stdout) {
@@ -116,18 +173,3 @@ export function createDirOrFile(pt,isFile = true){
     if (isFile) fs.createWriteStream(pt);
     return true
 }
-
-export let aesEncrypt = function (data, key) { // 加密
-    const cipher = crypto.createCipher('aes192', key);
-    var crypted = cipher.update(data, 'utf8', 'hex');
-    crypted += cipher.final('hex');
-    return crypted;
-};
-
-export let aesDecrypt = function (encrypted, key) { // 解密
-    const decipher = crypto.createDecipher('aes192', key);
-    var decrypted = decipher.update(encrypted, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
-};
-

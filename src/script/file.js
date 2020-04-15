@@ -1,24 +1,7 @@
 import fs from 'fs';
-import path from 'path';
 import { execSync, exec } from 'child_process';
 import { createDirOrFile, aesDecrypt, aesEncrypt } from './utils.js';
-
-const {remote} = require('electron');
-let configDir = remote.app.getPath('userData');
-
-
-let configPath = path.resolve(configDir,'ihost');
-const whoami = execSync(`whoami`).toString().trim();
-
-const pathMap = {
-    host: configPath,
-    config: path.join(configPath,'config.json'),
-    local: path.join(configPath,'local'),
-    localOg: path.join(configPath,'local','System'), // 系统host
-    remote: path.join(configPath,'remote'),
-    remoteDev: path.join(configPath,'remote','dev'),
-    remotePre: path.join(configPath,'remote','pre')
-};
+import { whoami, pathMap } from './config.js';
 
 let initFile = ()=>{
     // 若不存在创建目录、文件夹、文件
@@ -50,45 +33,7 @@ let readFile = function(type = 'local', name) {
 }
 
 
-// 读取配置文件
-let readConfigFile = function(key) {
-    let configString = fs.readFileSync(`${pathMap.config}`, 'utf8');
-    let config = configString ? JSON.parse(configString) : {};
-    
-    if (key === 'password') {
-        return config[key] ? aesDecrypt(config[key], 'ihost') : '';
-    } else {
-        return config[key] || '';
-    }
-}
 
-// 写配置文件
-let writeConfigFile = function(key, val) {
-    let configString = fs.readFileSync(`${pathMap.config}`, 'utf8');
-    let config = configString ? JSON.parse(configString) : {};
-
-    if (key === 'password') {
-        config[key] = aesEncrypt(val, 'ihost')
-    } else {
-        config[key] = val;
-    }
-    fs.writeFileSync(`${pathMap.config}`, JSON.stringify(config), 'utf8');
-}
-
-
-// 改变owner
-let haveSudoPower = function(password, owner) {
-    return new Promise((resolve)=>{
-        try {
-            exec(`echo ${password}|sudo -S chown ${owner || whoami} /etc/hosts`, (err)=>{
-                let havaPower = err?false:true;
-                resolve(havaPower);
-            });
-        }catch(err){
-            resolve(false);
-        }
-    });
-};
 
 let redhost = function(){
     return fs.readFileSync(`/etc/hosts`, 'utf8');
@@ -125,9 +70,6 @@ export {
     dlFile,
     wtFile,
     reNameFile,
-    getLocalFileList,
-    writeConfigFile,
-    readConfigFile,
-    haveSudoPower
+    getLocalFileList
 };
 
