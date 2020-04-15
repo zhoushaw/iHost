@@ -1,9 +1,13 @@
 
-import {haveSudoPower,writeConfigFile,readConfigFile} from './file';
+import {haveSudoPower,writeConfigFile,readConfigFile, whoami} from './file';
 import { MessageBox, Message } from 'element-ui';
+import { exec } from 'child_process';
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+
+export let port = 9393;
+
 
 export let GetSudoPassword = (password)=>{
     return new Promise((resolve,reject)=>{
@@ -21,7 +25,7 @@ export let GetSudoPassword = (password)=>{
                     inputType: 'password'
                 }).then(async ({ value }) => {
                     GetSudoPassword(value);
-                })
+                });
             }
         }
         try {
@@ -30,6 +34,65 @@ export let GetSudoPassword = (password)=>{
             reject(err);
         }
     });
+}
+
+function _getNetWorkService(password) {
+    var shPath =  path.resolve(__dirname, 'tools/findMacService.sh');
+    return new Promise(function(resolve, reject) {
+         exec(shPath, function(err, stdout) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({
+                    password: password,
+                    service: stdout
+                });
+            }
+        })
+    });
+}
+
+// 开启关闭代理
+function _changeProxy(data,status = true) {
+    let stdout = data.service;
+    let password = data.password;
+    return new Promise(function(resolve, reject) {
+        stdout = stdout.split('\n')[0];
+        let serviceList = stdout.split(',');
+        let enableCommand = '', disableCommand = '';
+        serviceList.forEach(function(item) {
+            if (item) {
+                enableCommand += `networksetup -setwebproxy '${item}' 127.0.0.1 ${port}; networksetup -setsecurewebproxy '${item}' 127.0.0.1 ${port};networksetup -setwebproxystate '${item}' on;networksetup -setsecurewebproxystate '${item}' on;`;
+                disableCommand += `networksetup -setwebproxystate '${item}' off;networksetup -setsecurewebproxystate '${item}' off;`;
+            }
+        });
+        enableCommand = `echo ${password}|sudo -u ${whoami} ${enableCommand}`;
+        disableCommand = `echo ${password}|sudo -u ${whoami} ${disableCommand}`;
+
+        var child = exec(status? enableCommand : disableCommand, function(err, stdout, stderr) {
+            
+            if (err) {
+                reject(err);
+                return;
+            } 
+            if (stderr) {
+                reject(stderr);
+                return;
+            }
+            resolve(stdout);
+        });
+    })
+}
+
+export let setSystemProxy = (cb,status)=>{
+    GetSudoPassword()
+        .then(_getNetWorkService)
+        .then((data)=>_changeProxy(data,status))
+        .then(function(stdout) {
+            cb(null, stdout);
+        }).catch(function(e) {
+            cb(e);
+        });
 }
 
 // 创建文件或文件夹

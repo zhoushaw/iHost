@@ -82,7 +82,6 @@ let haveSudoPower = function(password, owner) {
     return new Promise((resolve)=>{
         try {
             exec(`echo ${password}|sudo -S chown ${owner || whoami} /etc/hosts`, (err)=>{
-                console.log(err)
                 let havaPower = err?false:true;
                 resolve(havaPower);
             });
@@ -119,6 +118,7 @@ let wtFile = (path,data)=>{
 }
 
 export {
+    whoami,
     readFile,
     redhost,
     writeHost,

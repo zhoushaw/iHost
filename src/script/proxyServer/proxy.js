@@ -15,6 +15,8 @@ class EasyProxy{
     }
 
     start () {
+        if (server) return;
+        
         server = http.createServer();
     
         server.on("request", this.requestHandler);

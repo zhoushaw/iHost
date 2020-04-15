@@ -7,7 +7,7 @@
             <el-tooltip content="删除" placement="bottom">
                 <i class="el-icon-delete" @click="deleteFile"></i>
             </el-tooltip>
-            <el-tooltip content="启动停止代理" placement="bottom">
+            <el-tooltip :content="isStart?'停止代理':'启动代理'" placement="bottom">
                 <i :class="{'el-icon-video-pause':isStart, 'el-icon-video-play':!isStart}" @click="()=>STServer()"></i>
             </el-tooltip>
         </div>
@@ -40,7 +40,7 @@
 <script>
 import { readFile, getLocalFileList , dlFile } from '@script/file.js';
 import EasyProxy from '@script/proxyServer/proxy.js';
-import { GetSudoPassword } from '@script/utils.js';
+import { GetSudoPassword, setSystemProxy, port } from '@script/utils.js';
 import { MessageBox, Message } from 'element-ui';
 
 import EditInfo from './editInfo.vue';
@@ -59,14 +59,15 @@ export default {
                 index: null,
                 title: ''
             },
-            hostJson: {}
+            hostJson: {},
+            nwProxy: null
         }
     },
     created () {
         this.refreshList();
         this.selectFile(0);
-        let nwProxy = new EasyProxy({
-            port: 9393,
+        this.nwProxy = new EasyProxy({
+            port: port,
             onBeforeRequest: (req)=> {
                 let host = this.hostJson[req.host]
                 console.log(`经过 ${req.host}`,this.hostJson[req.host]);
@@ -84,7 +85,6 @@ export default {
                 console.log(e.message);
             }
         });
-        nwProxy.start();
     },
     methods: {
 
@@ -110,6 +110,7 @@ export default {
         },
 
         deleteFile(){
+            if (this.curEditIndex ===0 ) return;
             let fileName = this.localFiles[this.curEditIndex-1].title;
             let nEditIndex = this.curEditIndex -1;
             this.$emit('set-edit-index',nEditIndex);
@@ -170,20 +171,16 @@ export default {
             };
         },
         // 开启停止服务
-        STServer(password = ''){
-            GetSudoPassword().then(password=>{
-                console.log(password);
-            });
-        },
-        // 提示输入密码
-        promptPs (content) {
-            MessageBox.prompt('请输入开机密码', '', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                inputType: 'password'
-            }).then(async ({ password }) => {
-                this.STServer(password);
-            })
+        STServer(){
+            setSystemProxy((res)=>{
+                this.isStart = !this.isStart;
+                if (this.isStart) {
+                    this.nwProxy.start();
+                    Message({ message: '代理开启成功', type: 'success' });
+                } else {
+                    Message({ message: '代理已关闭' });
+                }
+            },!this.isStart);
         }
     }
 }
