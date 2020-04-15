@@ -1,6 +1,7 @@
 import { app, BrowserWindow, Tray, ipcMain } from 'electron'
 import { EasyProxy } from '../script/proxy.js';
 import { setSystemProxy } from '../script/utils.js';
+const path = require('path');
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -16,9 +17,18 @@ const winURL = process.env.NODE_ENV === 'development'
 let canClose = false;
 
 function createWindow () {
-    /**
-     * Initial window options
-     */
+    
+    // let iconPath = path.resolve(__static, './icon.ico');
+    // tray = new Tray(iconPath);
+    // tray.setToolTip('ihost');
+    // const contextMenu = Menu.buildFromTemplate([
+    //     { label: 'Item1', type: 'radio' },
+    //     { label: 'Item2', type: 'radio' },
+    //     { label: 'Item3', type: 'radio', checked: true },
+    //     { label: 'Item4', type: 'radio' }
+    // ]);
+    // tray.setContextMenu(contextMenu)
+    
     mainWindow = new BrowserWindow({
         height: 500,
         useContentSize: true,
@@ -36,7 +46,7 @@ function createWindow () {
 }
 
 app.on('ready', createWindow)
-
+app.dock.setIcon(`${path.join(__static, './icon.png')}`);
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit()
