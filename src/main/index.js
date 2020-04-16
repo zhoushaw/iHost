@@ -61,7 +61,6 @@ app.on('activate', () => {
     }
 })
 
-
 app.on('before-quit',async (event)=>{
     if (!canClose)  event.preventDefault();
     try {
