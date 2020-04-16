@@ -62,11 +62,16 @@ app.on('activate', () => {
 })
 
 app.on('before-quit',async (event)=>{
-    // if (!canClose)  event.preventDefault();
-    // setSystemProxy(()=>{
-    //     canClose = true;
-    //     app.quit();
-    // }, false, false)
+    if (!canClose)  event.preventDefault();
+    try {
+        setSystemProxy(()=>{
+            canClose = true;
+            app.quit();
+        }, false, false)
+    } catch(err){
+        canClose = true;
+        app.quit();
+    }
 })
 
 function createAgentSever(){

@@ -68,21 +68,23 @@ export let readConfigFile = function(key) {
 export let GetSudoPassword = (password,showUi)=>{
     return new Promise((resolve,reject)=>{
         async function checkPS (password){
-            password = password || readConfigFile('password');
-            let power = await haveSudoPower(password)
+            let newPassword = password || readConfigFile('password');
+            let power = await haveSudoPower(newPassword);
             if (power) {
-                writeConfigFile('password',password);
-                resolve(password);
+                writeConfigFile('password',newPassword);
+                resolve(newPassword);
             } else if(showUi) {
-                let element = import('element-ui');
-                element.Message({ message: '您的密码已失效' });
-                element.MessageBox.prompt('请输入开机密码', '', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    inputType: 'password'
-                }).then(async ({ value }) => {
-                    GetSudoPassword(value);
-                });
+                const {Message,MessageBox} = require('element-ui');
+                password && Message({ message: '您的密码无效' });
+                setTimeout(()=>{
+                    MessageBox.prompt('请输入开机密码', '', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        inputType: 'password'
+                    }).then(async ({ value }) => {
+                        GetSudoPassword(value, true);
+                    });
+                },500);
             }
         }
         try {
