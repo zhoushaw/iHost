@@ -6,7 +6,7 @@
 * 支持秒切host，无延迟
 * 支持macOs系统（window后续兼容）
 
-<img src="https://user-gold-cdn.xitu.io/2020/4/23/171a4de849e05e32?w=1600&h=1044&f=png&s=72005" width="300px" />
+<img src="https://user-gold-cdn.xitu.io/2020/4/23/171a4e294d2118de?w=1606&h=1054&f=png&s=125334" width="500px" />
 
 
 ## 本地运行
