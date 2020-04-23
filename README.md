@@ -1,17 +1,24 @@
-# ihost
+## ihost
 
-> An electron-vue project
+> host工具
 
-#### Build Setup
+* 支持创建本地host文件
+* 支持秒切host，无延迟
+* 支持macOs系统（window后续兼容）
+
+
+![](https://user-gold-cdn.xitu.io/2020/4/23/171a4de849e05e32?w=1600&h=1044&f=png&s=72005)
+
+## 本地运行
 
 ``` bash
-# install dependencies
+# 安装依赖
 npm install
 
-# serve with hot reload at localhost:9080
+# 运行在本地 localhost:9080
 npm run dev
 
-# build electron application for production
+# 打包安装包
 npm run build
 
 
