@@ -2,9 +2,9 @@
 
 > host工具
 
-* 支持创建本地host文件
-* 支持秒切host，无延迟
-* 支持macOs系统（window后续兼容）
+* Support local create host file
+* Support without delay switch host
+* Support macOS
 
 <img src="https://user-gold-cdn.xitu.io/2020/4/23/171a4e294d2118de?w=1606&h=1054&f=png&s=125334" width="500px" />
 
