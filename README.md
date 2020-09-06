@@ -1,6 +1,6 @@
 ## ihost
 
-> host工具
+> host util
 
 * Support local create host file
 * Support without delay switch host
