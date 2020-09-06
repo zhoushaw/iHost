@@ -9,7 +9,7 @@
 <img src="https://user-gold-cdn.xitu.io/2020/4/23/171a4e294d2118de?w=1606&h=1054&f=png&s=125334" width="500px" />
 
 
-## 本地运行
+## Run locally
 
 ``` bash
 # Install dependencies
