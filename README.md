@@ -12,13 +12,13 @@
 ## 本地运行
 
 ``` bash
-# 安装依赖
+# Install dependencies
 npm install
 
-# 运行在本地 localhost:9080
+# localhost:9080
 npm run dev
 
-# 打包安装包
+# build boundle
 npm run build
 
 
